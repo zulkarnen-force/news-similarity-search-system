@@ -1,6 +1,7 @@
 # from amqpstorm import Connection
 import json
 import pandas as pd
+import numpy as np
 
 def insert_to_redis(filename,result_json):
     import redis
@@ -10,8 +11,6 @@ def insert_to_redis(filename,result_json):
 
     redis.json().set(filename, Path.rootPath(), result_json)
 
-    result = redis.json().get(filename)
-    print(result)
 
 def on_message(message):
     loadfile = json.loads(message.body)
@@ -30,12 +29,13 @@ def on_message(message):
         
     file_df = load_data()
     df = pd.DataFrame(file_df)
-
-    result = df.to_json(orient="records")
+    df.insert(loc=0, column='row', value=np.arange(len(df)))
+    result = df.to_json(orient="index")
     parsed = json.loads(result)
     result_json = json.dumps(parsed, indent=4)
 
-    insert_to_redis(file,result_json)
+    print(result_json)
+    insert_to_redis(file,parsed)
     
     # Akui bahwa kami menangani pesan tanpa masalah.
     message.ack()
