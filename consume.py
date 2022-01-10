@@ -1,16 +1,19 @@
-# from amqpstorm import Connection
 import json
 import pandas as pd
 import numpy as np
 
 def insert_to_redis(filename,result_json):
     import redis
-    import json
-    from redis.commands.json.path import Path   
-    redis = redis.Redis(host= 'localhost',port= '6379')
+    # from redis.commands.json.path import Path
+    redis = redis.Redis(host='localhost',port='6379')
 
-    redis.json().set(filename, Path.rootPath(), result_json)
-
+    ## **OPSI 01** -> simpan dalam bentuk json dengan ex-json 
+    ## Ada pilihan option untuk mencari specifik data
+    # redis.json().set(filename, Path.rootPath(), result_json)
+    
+    ## **OPSI 02** -> simpan dalam bentuk json
+    ## Tidak ada pilihan option untuk mencari specifik data
+    redis.rpush(filename, json.dumps(result_json))
 
 def on_message(message):
     loadfile = json.loads(message.body)
@@ -29,8 +32,8 @@ def on_message(message):
         
     file_df = load_data()
     df = pd.DataFrame(file_df)
-    df.insert(loc=0, column='row', value=np.arange(len(df)))
-    result = df.to_json(orient="index")
+    df.insert(loc=21, column='row', value=np.arange(len(df)))
+    result = df.to_json(orient="records")   
     parsed = json.loads(result)
     result_json = json.dumps(parsed, indent=4)
 
