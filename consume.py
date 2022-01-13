@@ -4,20 +4,13 @@ import numpy as np
 
 def insert_to_redis(filename,result_json):
     import redis
-    # from redis.commands.json.path import Path
-    redis = redis.Redis(host='localhost',port='6379')
+    redis = redis.Redis(host='128.199.145.214',port='6379')
 
-    ## **OPSI 01** -> simpan dalam bentuk json dengan ex-json 
-    ## Ada pilihan option untuk mencari specifik data
-    # redis.json().set(filename, Path.rootPath(), result_json)
-    
-    ## **OPSI 02** -> simpan dalam bentuk json
-    ## Tidak ada pilihan option untuk mencari specifik data
     redis.rpush(filename, json.dumps(result_json))
 
 def on_message(message):
     loadfile = json.loads(message.body)
-    link = "http://127.0.0.1:8000"
+    link = "http://_internal-test.binosaurus.com"
     path = "/storage/excel-data/"
     file = str(loadfile["filename"])
     url = link+path+file
@@ -33,7 +26,7 @@ def on_message(message):
     file_df = load_data()
     df = pd.DataFrame(file_df)
     df.insert(loc=21, column='row', value=np.arange(len(df)))
-    result = df.to_json(orient="records")   
+    result = df.to_json(orient="records")
     parsed = json.loads(result)
     result_json = json.dumps(parsed, indent=4)
 
