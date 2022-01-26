@@ -1,12 +1,12 @@
 import json
 import pandas as pd
-import numpy as np
 import env
- 
-def insert_to_redis(filename,result_json):
-    import redis
-    redis = redis.Redis(host=env.HOST,port=env.PORT)
+import redis
 
+# connect to redis
+redis = redis.Redis(host=env.HOST,port=env.PORT)
+
+def insert_to_redis(filename,result_json):
     redis.rpush(filename, json.dumps(result_json))
 
 def on_message(message):
@@ -26,12 +26,12 @@ def on_message(message):
         
     file_df = load_data()
     df = pd.DataFrame(file_df)
-    df.insert(loc=21, column='row', value=np.arange(len(df)))
+    
+    # to json
     result = df.to_json(orient="records")
     parsed = json.loads(result)
-    result_json = json.dumps(parsed, indent=4)  
 
-    print(result_json)
+    print(df)
     insert_to_redis(file,parsed)
     
     # Akui bahwa kami menangani pesan tanpa masalah.

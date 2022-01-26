@@ -1,5 +1,6 @@
 import json
 import env
+import redis
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.tokenize import TweetTokenizer
@@ -10,16 +11,14 @@ import pandas as pd
 import string
 
 DEFAULT_SIMILARITY_VALUE = 0.4
+redis = redis.Redis(host=env.HOST, port=env.PORT)
 
 def insert_to_redis(filename,result_json):
-    import redis
-    redis = redis.Redis(host=env.HOST, port=env.PORT)
-
     redis.rpush(filename, json.dumps(result_json))
 
 def similarity_word_preproses(colum,value,filename):
-    import redis
-    redis = redis.Redis(host=env.HOST,port=env.PORT)
+    # import redis
+    # redis = redis.Redis(host=env.HOST,port=env.PORT)
             
     redisdata = redis.lrange(filename, -1,-1)
     datastring = redisdata[0]
@@ -29,14 +28,14 @@ def similarity_word_preproses(colum,value,filename):
     listdata = json.loads(datastring)
 
     df = pd.DataFrame(listdata)
+    
     # insert to first row data
-    df = df[[colum]]
-    df.loc[-1] = [value]
+    data = {colum : value}
+    df.loc[-1] = data
     df.index = df.index + 1 
     df.sort_index(inplace=True)
     df['lower'] = df[colum].str.lower()
-
-
+    
     def hapus_angka(tweet):
         tweet = re.sub(r"\d+", "", tweet)
         return tweet
@@ -102,7 +101,7 @@ def similarity_word_preproses(colum,value,filename):
 
     hasil_1 = hasil.T
     df['similarity'] = hasil_1
-    df = df[[colum, 'similarity']]
+    df.drop(['lower', 'h_angka','token','clean'], axis=1, inplace=True, errors='ignore')
 
     # remove first row
     df = df.iloc [ 1 : , : ]
@@ -110,10 +109,10 @@ def similarity_word_preproses(colum,value,filename):
     # hanya memunculkan yang memiliki nilai similarity >= DEFAULT_SIMILARITY_VALUE
     df = df.loc[df['similarity'] >= DEFAULT_SIMILARITY_VALUE]
     
+    
     # set to json
     result = df.to_json(orient="records")
     parsed = json.loads(result)
-    result_json = json.dumps(parsed, indent=4) 
+    print(df)
     
-    print(result_json)
     insert_to_redis(filename,parsed)
