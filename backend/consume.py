@@ -12,13 +12,15 @@ def insert_to_redis(filename,result_json):
 def on_message(message):
     loadfile = json.loads(message.body)
     link = env.LINK
-    path = "/storage/excel-data/"
+    path = "/excel-data/"
     file = str(loadfile["filename"])
+    print(loadfile)
     url = link+path+file
+    print(url)
     
     def load_data():
         if file.lower().endswith(('.xlsx','.xlx','.xls')) :
-            data = pd.read_excel(url)
+            data = pd.read_excel(url, engine='openpyxl')
             return data
         elif file.lower().endswith('.csv'):
             data = pd.read_csv(url)
