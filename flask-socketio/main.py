@@ -1,4 +1,4 @@
-from flask import Flask 
+from flask import Flask, render_template
 from flask_socketio import SocketIO, send
 import json
 import numpy as np
@@ -8,6 +8,11 @@ from similarity_preprosess import similarity_word_preproses
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 socketio = SocketIO(app, cors_allowed_origins='*')
+app = Flask(__name__, template_folder='../flask-socketio')
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @socketio.on('message')
 def handleMessage(msg):
