@@ -1,40 +1,57 @@
+from calendar import c
+from codecs import ignore_errors
+from operator import index
+from textwrap import indent
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 import env
+from py_console import console
+import redis
+
 
 DEFAULT_SIMILARITY_VALUE = 0.4
-def similarity_word(colum,value,filename):    
-    import redis
-    redis = redis.Redis(host=env.HOST,port=env.PORT)
-        
-    redisdata = redis.lrange(filename, -1,-1)
-    datastring = redisdata[0]
-    datastring = datastring.decode('utf-8')
-        
-    # data yang digunakan
-    listdata = json.loads(datastring)
+redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 
-    df = pd.DataFrame(listdata)
-    # insert to first row data
-    df = df[[colum]]
-    df.loc[-1] = [value]
-    df.index = df.index + 1 
+
+def parse_redis_to_list_of_dict(redis_data: list): 
+    return json.loads(redis_data[0])
+
+
+def similarity_word(column_name, value:str, filename:str, similarity_value:float):    
+    redisdata = redis.lrange(filename, -1,-1)
+    list_of_dict = parse_redis_to_list_of_dict(redisdata)
+       
+    df = pd.DataFrame(list_of_dict)
+    df.loc[-1] = {column_name: value}
+    df.index += 1 
     df.sort_index(inplace=True)
 
-    corpus = df[colum]
-    # from sklearn.feature_extraction.text import CountVectorizer
+
+    corpus = df[column_name]
+    from sklearn.feature_extraction.text import CountVectorizer
     vectorizer = CountVectorizer()
-    trsfm=vectorizer.fit_transform(corpus)
-    # from sklearn.metrics.pairwise import cosine_similarity
-    hasil = pd.DataFrame(cosine_similarity(trsfm[0:1],trsfm))
-    hasil_1 = hasil.T
-    df['similarity'] = hasil_1
+    transform_vector = vectorizer.fit_transform(corpus)
+    from sklearn.metrics.pairwise import cosine_similarity
+    result_vector_df = pd.DataFrame(cosine_similarity(transform_vector[0:1], transform_vector))
+       
+    df['similarity'] = result_vector_df.T
     
     # remove first row
-    df = df.iloc [ 1 : , : ]
-    
+    df = df.iloc[ 1:, : ]
+
     # hanya memunculkan yang memiliki nilai similarity >= 0.4
-    df = df.loc[df['similarity'] >= DEFAULT_SIMILARITY_VALUE]
-    print (df)
+    df = df.loc[df['similarity'] >= similarity_value]
+     
+    rows = df['row'].to_list()
+    similarity_values = df['similarity'].to_list()
+
+    response = {
+        "rows": rows,
+        "similarity_values": similarity_values,
+        "length": len(rows)
+    }
+    
+    
+    return response
