@@ -1,0 +1,31 @@
+{
+  "name": "unida-binokular-2021-backend-fork",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "backend": "python ./backend/main.py",
+    "venv":"d:/UAD/SEMESTER 6/INTERNSHIP/DEVELOPMENT/unida-binokular-2021-backend-fork/venv/Scripts/Activate",
+    "flask": "nodemon ./flask-socketio/main.py",
+    "test-producer": "python ./test/feature-test/MQ/producer_files.py",
+    "test-redis": "python ./test/feature-test/test_redis/test_redis.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/zulkarnen/unida-binokular-2021-backend-fork.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/zulkarnen/unida-binokular-2021-backend-fork/issues"
+  },
+  "homepage": "https://gitlab.com/zulkarnen/unida-binokular-2021-backend-fork#readme",
+  "dependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
