@@ -28,7 +28,7 @@ def handle_request(request: dict):
     """
     
     column_name, text, filename, similarity = \
-    request['column_name'], request['text'], request['filename'], request['similarity_value']
+    request['column_name'], request['text'], request['filename'], request['similarity']
     
     
     result = similarity_word(column_name, text, filename, float(similarity))
