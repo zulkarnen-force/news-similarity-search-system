@@ -28,7 +28,7 @@
             socket.on('response-similarity', (responses) => {
                 console.log(responses)
                 $("#messages").append('<p> Rows Similarity : ' + responses.rows + '</p>');
-                $("#messages").append('<p> Value Similarity : ' + responses.similarity_values + '</p>');
+                $("#messages").append('<p> Value Similarity : ' + responses.similarity + '</p>');
             })
 
             socket.on('message', function (msg) {
@@ -44,7 +44,7 @@
                     filename: "data.json",
                     text: text,
                     column_name: 'content',
-                    similarity_value: similiarityValue
+                    similarity: similiarityValue
                 });
             });
 

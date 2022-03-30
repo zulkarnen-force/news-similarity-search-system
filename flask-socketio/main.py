@@ -24,14 +24,14 @@ def handle_request(request: dict):
     """this function for handle similarity request
 
     Args:
-        request (dict): {column_name, value, filename, similiarity_value}
+        request (dict): {column_name, text, filename, similarity}
     """
     
-    column_name, text, filename, similarity_value = \
+    column_name, text, filename, similarity = \
     request['column_name'], request['text'], request['filename'], request['similarity_value']
     
     
-    result = similarity_word(column_name, text, filename, float(similarity_value))
+    result = similarity_word(column_name, text, filename, float(similarity))
     emit('response-similarity', result)
 
 
