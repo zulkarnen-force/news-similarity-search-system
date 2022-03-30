@@ -49,7 +49,7 @@ def similarity_word(column_name, value:str, filename:str, similarity_value:float
 
     response = {
         "rows": rows,
-        "similarity_values": similarity_values,
+        "similarity": similarity_values,
         "length": len(rows)
     }
     
