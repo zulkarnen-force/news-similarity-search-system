@@ -27,12 +27,11 @@ def handle_request(request: dict):
         request (dict): {column_name, value, filename, similiarity_value}
     """
     
-    column_name, value, filename, similarity_value = \
-    request['column_name'], request['value'], request['filename'], request['similarity_value']
+    column_name, text, filename, similarity_value = \
+    request['column_name'], request['text'], request['filename'], request['similarity_value']
     
     
-    result = similarity_word(column_name, value, filename, float(similarity_value))
-    send(value)
+    result = similarity_word(column_name, text, filename, float(similarity_value))
     emit('response-similarity', result)
 
 

@@ -38,11 +38,11 @@
 
 
             $('#sendbutton').on('click', function () {
-                let value = $('#myMessage').val()
+                let text = $('#myMessage').val()
                 let similiarityValue = $('#similiarityValue').val()
                 socket.emit("request-similarity", {
                     filename: "data.json",
-                    value: value,
+                    text: text,
                     column_name: 'content',
                     similarity_value: similiarityValue
                 });
