@@ -19,16 +19,14 @@ def parse_redis_to_list_of_dict(redis_data: list):
     return json.loads(redis_data[0])
 
 
-def similarity_word(column_name, value:str, filename:str, similarity_value:float):    
-    redisdata = redis.lrange(filename, -1,-1)
+def similarity_word(column_name:str, value:str, filename:str, similarity_value:float):    
+    redisdata = redis.lrange(filename, -1, -1)
     list_of_dict = parse_redis_to_list_of_dict(redisdata)
        
     df = pd.DataFrame(list_of_dict)
     df.loc[-1] = {column_name: value}
     df.index += 1 
     df.sort_index(inplace=True)
-
-
     corpus = df[column_name]
     from sklearn.feature_extraction.text import CountVectorizer
     vectorizer = CountVectorizer()
