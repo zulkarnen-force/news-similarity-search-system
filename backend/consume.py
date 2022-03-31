@@ -4,6 +4,7 @@ import json
 import pandas as pd
 import env
 import redis 
+from redis.exceptions import DataError
 from py_console import console
 
 
@@ -13,22 +14,26 @@ redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 
 
 def insert_to_redis(filename, data):
-    if (redis.rpush(filename, json.dumps(data)) != 0) :
-        console.info('Berhasil Simpan ke Redis')
-    else: 
-        console.error('Failure save to Redis')
-
-
+    
+    try :
+        return redis.rpush(filename, json.dumps(data)) 
+    except DataError as e :
+        console.error(e.args, severe=True)
+    except Exception as e :
+        print(e)
+        
+             
+        
 def load_file_from_db(url:str, filename:str) :
     
     if filename.lower().endswith(('.xlsx','.xlx','.xls')) :
-        data = pd.read_excel(url, engine='openpyxl')
-        return data
+        return pd.read_excel(url, engine='openpyxl')
     elif filename.lower().endswith('.csv'):
-        data = pd.read_csv(url)
-        return data
+        return pd.read_csv(url)
+    
     return False
         
+
 
 def on_message(message):
     
@@ -36,12 +41,10 @@ def on_message(message):
     filename:str = headers['filename']
     source:str = headers['source']
 
-    console.info(filename, severe=True, showTime=False)
-
     dataframe = load_file_from_db(source, filename)
     
     if dataframe is False:
-        file = open('backend/data.json', 'r')
+        file = open('backend/data.json', 'r') # testing
         insert_to_redis(filename.split('.')[0], json.load(file))
         message.ack()
         
