@@ -37,6 +37,8 @@ def load_file_from_db(url:str, filename:str) :
 
 def on_message(message):
     
+    console.success(message.properties, severe=True, showTime=False)
+    
     headers = message.properties['headers']
     filename:str = headers['filename']
     source:str = headers['source']
