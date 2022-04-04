@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB Socketio</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var socket = io.connect('http://127.0.0.1:5000');
+
+            socket.on('connect', function () {
+                socket.send('User has connected!');
+            });
+
+
+            // TODO result {result: [{column: name, rows: }, {. . .}]}
+            socket.on('response-similarity', (responses) => {
+                console.log(responses)
+                $("#messages").append('<p> Rows Similarity : ' + responses.rows + '</p>');
+                $("#messages").append('<p> Value Similarity : ' + responses.similarity + '</p>');
+            })
+
+            socket.on('message', function (msg) {
+                $("#messages").append('<p>' + msg + '</p>');
+                console.log('Received message');
+            });
+
+            socket.on('error', function (error) {
+                $("#error").append('<h4 class="error">'+error+'</h4>');
+                $(".error").addClass("mb-3 alert alert-danger")
+                console.log(error)                
+            });
+
+
+            $('#sendbutton').on('click', function () {
+                let text = $('#myMessage').val()
+                let similiarityValue = $('#similiarityValue').val()
+                socket.emit("request-similarity", {
+                    filename: "data.json",
+                    text: text,
+                    column_name: 'content',
+                    similarity: similiarityValue
+                });
+            });
+
+
+        });
+    </script>
+    <div class="container">
+        <p id="messages"></p>
+        <div class="input-group mb-3">
+            <input type="text" id="myMessage" value="Serikat buruh se-Indonesia membatalkan rencana aksi menolak RUU Omnibus Law Cipta Kerja (Cipker) di tengah pandemi Covid-19, menyusul dibatalkannya pembahasan klaster ketenagakerjaan dalam RUU tersebut. Awalnya, mereka berencana turun ke jalan pada 30 April 2020, bertepatan dengan Hari Buruh Internasional atau May Day. Namun, akhirnya dibatalkan setelah Presiden Joko Widodo (Jokowi) menyatakan untuk menunda pembahasan RUU Ciptaker klaster ketenagakerjaan selama pandemi Covid-19. Maka dengan demikian, serikat buruh dengan ini menyatakan batal atau tidak jadi aksi pada tanggal 30 April di dan Kemenko Perekonomian, kata Presiden Konfederasi Serikat Pekerja Indonesia (KSPI), Said Iqbal lewat keterangan resminya, Jumat (24\/4). Menurut Said, serikat buruh mengapresiasi keputusan Presiden Jokowi lantaran telah mendengarkan padangan semua pihak. Termasuk masukan dari serikat buruh demi kebaikan seluruh bangsa dan rakyat Indonesia. Bagi dia, keputusan ini harus dijadikan momentum bagi masyarakat, khususnya kaum buruh untuk menjaga persatuan Tanah Air dalam melawan Covid-19. Selain itu, bisa mencari siasat bersama mencegah darurat PHK pascapandemi. Bukan hanya menunda, menurut Said, Presiden Jokowi juga setuju untuk membahas ulang klaster ketenagakerjaan dengan melibatkan serikat pekerja atau serikat buruh. Hal ini tercermin dari pernyataan Jokoei bahwa pemerintah akan mendengarkan pandangan semua pemangku kepentingan. Harus ada pembahasan ulang draft RUU Cipta Kerja klaster ketenagakerjaan yang melibatkan seluruh pemangku kepentingan. Pembahasan tersebut dilakukan setelah pandemi corona selesai, tegas dia. Sebelumnya, pemerintah dan DPR sepakat menunda pembahasan klaster ketenagakerjaan dalam RUU Omnibus Law Cipta Kerja, sebagaimana disampaikan Presiden Joko Widodo (Jokowi). Menurut Presiden Jokowi, pemerintah bersama dengan DPR memiliki pandangan yang sama untuk menunda klaster tersebut, dan telah menyampaikan kepada DPR untuk menunda pembahasan tersebut sejak Kamis (23\/4). Kemarin pemerintah telah menyampaikan kepada DPR, dan saya juga mendengar Ketua DPR sudah menyampaikan kepada masyarakat bahwa klaster Ketenagakerjaan dalam RUU Cipta Kerja ini pembahasannya ditunda, sesuai dengan keinginan pemerintah, ujarnya di Istana Merdeka, Jakarta Pusat, Jumat (24\/4). Mantan Gubernur DKI Jakarta ini mengatakan, dengan penundaan tersebut, maka pemerintah bersama DPR memiliki waktu yang lebih banyak untuk mendalami substansi dari pasal-pasal yang berkaitan.." class="form-control" placeholder="Send Messages">
+            <input type="number" id="similiarityValue" step="0.01" value="0.1">
+            <button id="sendbutton" class="btn btn-primary">Send</button>
+        </div>
+    </div>
+
+    <div role="alert" id="error"></div>
+</body>
+
+</html>
