@@ -9,7 +9,7 @@ from similarity_preprosess import similarity_word_preproses
 from similarity import  similarity_word
 from py_console import console
 
-app = Flask(__name__,template_folder='../flask-socketio')
+app = Flask(__name__,template_folder='../flask-socketio/templates')
 app.config['SECRET_KEY'] = 'mysecret'
 socketio = SocketIO(app, cors_allowed_origins='*')
 
@@ -17,6 +17,12 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/producer', methods=['GET'])
+def show_producer():
+    return render_template('producer.html', title='Producer')
+    return {'success':True}
 
 
 @socketio.on('request-similarity')
@@ -30,9 +36,15 @@ def handle_request(request: dict):
     column_name, text, filename, similarity = \
     request['column_name'], request['text'], request['filename'], request['similarity']
     
-    
-    result = similarity_word(column_name, text, filename, float(similarity))
-    emit('response-similarity', result)
+    try :
+        
+        result = similarity_word(column_name, text, filename, float(similarity))
+        emit('response-similarity', result)
+
+    except Exception as e:
+        console.error(e)
+        emit('error', e.args)
+        return False;
 
 
 @socketio.on('message')

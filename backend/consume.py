@@ -1,11 +1,10 @@
-from dataclasses import dataclass
-from email import header
 import json
 import pandas as pd
 import env
 import redis 
 from redis.exceptions import DataError
 from py_console import console
+from amqpstorm import message as msg
 
 
 BASE_URL = 'http://localhost:8000/'
@@ -16,7 +15,8 @@ redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 def insert_to_redis(filename, data):
     
     try :
-        return redis.rpush(filename, json.dumps(data)) 
+        if redis.rpush(filename, json.dumps(data)) != 0 :
+            console.success(f'file saved successfully on Redis with {filename}', severe=True, showTime=False)
     except DataError as e :
         console.error(e.args, severe=True)
     except Exception as e :
@@ -24,38 +24,72 @@ def insert_to_redis(filename, data):
         
              
         
-def load_file_from_db(url:str, filename:str) :
+def load_file_from_db(source:str, filename:str) :
     
-    if filename.lower().endswith(('.xlsx','.xlx','.xls')) :
-        return pd.read_excel(url, engine='openpyxl')
-    elif filename.lower().endswith('.csv'):
-        return pd.read_csv(url)
+    try :
+         
+        if filename.lower().endswith(('.xlsx','.xlx','.xls')) :
+            return pd.read_excel(source, engine='openpyxl')
+        elif filename.lower().endswith('.csv'):
+            return pd.read_csv(source)
+        elif filename.lower().endswith('.json') :
+            return pd.read_json(source)
+        else :
+            raise Exception('Erorr Format: Wrong file format: {}'.format(filename.lower().split('.')[-1]))
     
-    return False
+    except FileNotFoundError as e :
+        # console.error(e, severe=True)
+        # console.error(e, severe=True)
+        raise e
+        pass
         
 
 
 def on_message(message):
     
-    console.success(message.properties, severe=True, showTime=False)
+    console.info(message.properties, severe=True, showTime=False)
     
     headers = message.properties['headers']
+    
     filename:str = headers['filename']
     source:str = headers['source']
 
-    dataframe = load_file_from_db(source, filename)
+    try :
+        dataframe = load_file_from_db(source, filename)
     
-    if dataframe is False:
-        file = open('backend/data.json', 'r') # testing
-        insert_to_redis(filename.split('.')[0], json.load(file))
-        message.ack()
-        
-    else:
         json_data = dataframe.to_json(orient='records')
         object_data = json.loads(json_data)
         
-        insert_to_redis(filename.split('.')[0], object_data)
+        try :
+            
+            insert_to_redis(filename, object_data)  
+            message.ack()
+
+        except Exception as e:
+            raise e
+            pass
+        
+    except Exception as e:
+        console.error(e, severe=True)
         message.ack()
+        raise e
+        pass
+        
+        
+    
+    
+    
+    # if dataframe is False:
+    #     file = open('backend/data.json', 'r') # testing
+    #     insert_to_redis(filename, json.load(file))
+    #     message.ack()
+        
+    # else:
+    #     json_data = dataframe.to_json(orient='records')
+    #     object_data = json.loads(json_data)
+        
+    #     insert_to_redis(filename, object_data)
+    #     message.ack()
         
 
     
