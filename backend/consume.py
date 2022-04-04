@@ -1,4 +1,5 @@
 import json
+from click import secho
 import pandas as pd
 import env
 import redis 
@@ -13,6 +14,11 @@ redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 
 
 def insert_to_redis(filename, data):
+    
+    if (redis.llen(filename) > 0) :
+        console.info(redis.llen(filename))
+        console.warn('Data telah ada')
+        return
     
     try :
         if redis.rpush(filename, json.dumps(data)) != 0 :
@@ -38,10 +44,8 @@ def load_file_from_db(source:str, filename:str) :
             raise Exception('Erorr Format: Wrong file format: {}'.format(filename.lower().split('.')[-1]))
     
     except FileNotFoundError as e :
-        # console.error(e, severe=True)
-        # console.error(e, severe=True)
         raise e
-        pass
+        
         
 
 
@@ -66,14 +70,13 @@ def on_message(message):
             message.ack()
 
         except Exception as e:
-            raise e
+            console.error(e, severe=True, showTime=False)
             pass
         
     except Exception as e:
         console.error(e, severe=True)
         message.ack()
-        raise e
-        pass
+    
         
         
     

@@ -1,3 +1,4 @@
+from msilib.schema import ControlEvent
 from amqpstorm import Connection
 from consume import on_message
 import env

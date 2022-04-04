@@ -1,10 +1,7 @@
-from importlib.machinery import FrozenImporter
-from socket import socket
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send, emit
 import json
 import numpy as np
-# from similarity import similarity_word
 from similarity_preprosess import similarity_word_preproses
 from similarity import  similarity_word
 from py_console import console
@@ -17,12 +14,6 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
-@app.route('/producer', methods=['GET'])
-def show_producer():
-    return render_template('producer.html', title='Producer')
-    return {'success':True}
 
 
 @socketio.on('request-similarity')
