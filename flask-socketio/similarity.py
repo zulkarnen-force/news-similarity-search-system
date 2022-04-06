@@ -17,20 +17,24 @@ DEFAULT_SIMILARITY_VALUE = 0.4
 redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 
 
-def parse_redis_to_list_of_dict(redis_data: list): 
+def get_dict_from_redis(redis_data: list): 
     
     try:
         return json.loads(redis_data[0])
     except IndexError as e:
-        raise IndexError("Error: Data not found on Redis" )
+        raise e
     except:
         raise Exception('Error from load Redis')
         
 
-def similarity_word(column_name:str, value:str, filename:str, similarity_value:float):    
-    redisdata = redis.lrange(filename, -1, -1)
+def similarity_word(column_name:str, value:str, filename:str, similarity_value:float):
+    
+    if redis.exists(filename) is 0 :
+        raise Exception(f'data {filename} not exist in Redis')
+
     try :
-        list_of_dict = parse_redis_to_list_of_dict(redisdata)
+        redisdata = redis.lrange(filename, -1, -1)
+        list_of_dict = get_dict_from_redis(redisdata)
     except Exception as err:
         raise err
         
