@@ -15,18 +15,17 @@ redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 
 def insert_to_redis(filename, data):
     
-    if (redis.llen(filename) > 0) :
-        console.info(redis.llen(filename))
+    if (redis.exists(filename) > 0) :
         console.warn('Data telah ada')
         return
     
     try :
         if redis.rpush(filename, json.dumps(data)) != 0 :
-            console.success(f'file saved successfully on Redis with {filename}', severe=True, showTime=False)
+            console.success(f'file saved successfully on Redis with filename {filename}', severe=True, showTime=False)
     except DataError as e :
         console.error(e.args, severe=True)
     except Exception as e :
-        print(e)
+        console.error(e, severe=True)
         
              
         
@@ -53,8 +52,8 @@ def on_message(message):
     
     console.info(message.properties, severe=True, showTime=False)
     
-    headers = message.properties['headers']
-    
+    headers:dict = message.properties['headers']
+    content_type:str = message.content_type
     filename:str = headers['filename']
     source:str = headers['source']
 
@@ -70,13 +69,13 @@ def on_message(message):
             message.ack()
 
         except Exception as e:
-            console.error(e, severe=True, showTime=False)
-            pass
+            console.error(f'{e} ~consume.py', severe=True, showTime=False)
+            
         
     except Exception as e:
-        console.error(e, severe=True)
+        console.error(f'{e} ~consume.py', severe=True, showTime=False)
         message.ack()
-    
+        
         
         
     
