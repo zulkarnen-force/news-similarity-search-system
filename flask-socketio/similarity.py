@@ -1,9 +1,3 @@
-from calendar import c
-from codecs import ignore_errors
-from operator import index
-from random import seed
-from textwrap import indent
-from tkinter import E
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -20,6 +14,7 @@ redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 def get_dict_from_redis(redis_data: list): 
     
     try:
+        
         return json.loads(redis_data[0])
     except IndexError as e:
         raise e
@@ -27,22 +22,27 @@ def get_dict_from_redis(redis_data: list):
         raise Exception('Error from load Redis')
         
 
-def similarity_word(column_name:str, value:str, filename:str, similarity_value:float):
+def similarity_word(column_name:str, text:str, filename:str, similarity_value:float):
     
-    if redis.exists(filename) is 0 :
+    if redis.exists(filename) == 0 :
         raise Exception(f'data {filename} not exist in Redis')
 
     try :
         redisdata = redis.lrange(filename, -1, -1)
-        list_of_dict = get_dict_from_redis(redisdata)
+        redis_dict = get_dict_from_redis(redisdata)
     except Exception as err:
         raise err
-        
-    df = pd.DataFrame(list_of_dict)
-    df.loc[-1] = {column_name: value}
+    
+   
+    df = pd.DataFrame(redis_dict)
+    
+    df.loc[-1] = {column_name: text}
     df.index += 1 
     df.sort_index(inplace=True)
+
     corpus = df[column_name]
+   
+    
     from sklearn.feature_extraction.text import CountVectorizer
     vectorizer = CountVectorizer()
     transform_vector = vectorizer.fit_transform(corpus)
@@ -56,14 +56,14 @@ def similarity_word(column_name:str, value:str, filename:str, similarity_value:f
 
     # hanya memunculkan yang memiliki nilai similarity sesuai similarity_value
     df = df.loc[df['similarity'] >= similarity_value]
-     
-    rows = df['row'].to_list()
+    df['rows'] = df.index
+        
     similarity_values = df['similarity'].to_list()
 
     response = {
-        "rows": rows,
+        "rows": df['rows'].to_list(),
         "similarity": similarity_values,
-        "length": len(rows)
+        "length": len(df['rows'])
     }
     
     

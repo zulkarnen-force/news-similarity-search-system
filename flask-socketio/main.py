@@ -16,31 +16,32 @@ def index():
     return render_template('index.html')
 
 
-@socketio.on('request-similarity')
+@socketio.on('request')
 def handle_request(request: dict):
     """this function for handle similarity request
 
     Args:
         request (dict): {column_name, text, filename, similarity}
     """
-    
+    console.info(f"Request: {request}", showTime=True)
+
     column_name, text, filename, similarity = \
     request['column_name'], request['text'], request['filename'], request['similarity']
-    
+
     try :
         
         result = similarity_word(column_name, text, filename, float(similarity))
-        emit('response-similarity', result)
+        emit('response', result)
 
     except Exception as e:
-        console.error(e)
+        console.error("Error Try similarity_word()", e)
         emit('error', e.args)
         return False;
 
 
 @socketio.on('message')
 def handleMessage(msg):
-    send(msg, broadcast=True)
+    send(f'FROM SERVER: {msg}', broadcast=True)
     msg = msg.split(" ; ")
     msg = np.array(msg)
     

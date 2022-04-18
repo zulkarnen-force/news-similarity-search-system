@@ -27,7 +27,7 @@
             
  
             // TODO result {result: [{column: name, rows: }, {. . .}]}
-            socket.on('response-similarity', (responses) => {
+            socket.on('response', (responses) => {
 
                 console.info("Response", responses)
                 
@@ -69,7 +69,7 @@
                 let text = $('#myMessage').val()
                 let similiarityValue = $('#similiarityValue').val()
 
-                socket.emit("request-similarity", {
+                socket.emit("request", {
                     filename: "data.json",
                     text: text,
                     column_name: 'content',
