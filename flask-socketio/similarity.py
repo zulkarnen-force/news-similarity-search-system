@@ -5,6 +5,7 @@ import json
 import env
 from py_console import console
 import redis
+import re
 
 DEFAULT_SIMILARITY_VALUE = 0.4
 redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
@@ -20,6 +21,9 @@ def parse_to_dict(redis_data: list):
     except:
         raise Exception('Error from load Redis')
         
+
+def exclude_number(cell_name: str) :
+    return re.findall("[A-Z]+", cell_name)[0]
 
 def similarity_word(request):
     console.info('REQUEST: ', request)
@@ -64,13 +68,13 @@ def similarity_word(request):
             
         similarity_values = df['similarity'].to_list()
         rows = df['rows'].to_list()
-
+        
         response = {
             "result":True if len(similarity_values) != 0 else False ,
             "rows": rows,
             "columnName": column_name,
             "similarity": similarity_values,
-            "cell": list(map(lambda row: cell[0]+row, list(map(str, rows)))), 
+            "cell": list(map(lambda row: exclude_number(cell)+row, list(map(str, rows)))), 
             "length": len(df['rows']),
         }
         
