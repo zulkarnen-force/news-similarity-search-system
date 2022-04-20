@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "backend": "python ./backend/main.py",
     "venv":"d:/UAD/SEMESTER 6/INTERNSHIP/DEVELOPMENT/unida-binokular-2021-backend-fork/venv/Scripts/Activate",
-    "flask": "python ./flask-socketio/main.py",
+    "flask": "nodemon ./flask-socketio/main.py",
     "test-producer": "python ./tests/feature-test/MQ/producer_files.py",
     "test-redis": "python ./tests/feature-test/test_redis/test_redis.py"
   },

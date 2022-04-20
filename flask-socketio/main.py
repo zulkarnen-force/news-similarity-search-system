@@ -21,21 +21,22 @@ def handle_request(request: dict):
     """this function for handle similarity request
 
     Args:
-        request (dict): {column_name, text, filename, similarity}
+        request (dict): {column_name, text, filename, similarity, cell}
+            Example 
+            {
+                column_name: "content", text: "foo and bar", filename: "bino_23234.xlsx", cell: "A1"
+            }
     """
-    console.info(f"Request: {request}", showTime=True)
-
-    column_name, text, filename, similarity = \
-    request['column_name'], request['text'], request['filename'], request['similarity']
+    
 
     try :
         
-        result = similarity_word(column_name, text, filename, float(similarity))
+        result = similarity_word(request)
         emit('response', result)
 
-    except Exception as e:
-        console.error("Error Try similarity_word()", e)
-        emit('error', e.args)
+    except BaseException as err:
+        console.error('From: {}: \n {}'.format(__file__, err))
+        emit('error', err.args)
         return False;
 
 
