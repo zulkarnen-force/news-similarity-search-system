@@ -12,16 +12,17 @@ BASE_URL = 'http://localhost:8000/'
 # connect to redis
 redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
 
-
+    
 def insert_to_redis(filename, data):
     
-    if (redis.exists(filename) > 0) :
-        console.warn('Data telah ada')
-        return
-    
-    try :
-        if redis.rpush(filename, json.dumps(data)) != 0 :
-            console.success(f'file saved successfully on Redis with filename {filename}', severe=True, showTime=False)
+    try:
+        if (redis.exists(filename) == 0) :
+            if redis.rpush(filename, json.dumps(data)) != 0 :
+                console.success(f'file saved successfully on Redis with filename {filename}', severe=True, showTime=False)
+            else:
+                raise Exception('Failed save to redis')
+        else:
+            raise Exception(f'key with {filename} already exists on redis')
     except DataError as e :
         console.error(e.args, severe=True)
     except Exception as e :
@@ -61,7 +62,7 @@ def on_message(message):
     # path:str = headers['path']
     # console.error(path)
     
-    console.error(body, severe=True, showTime=False)
+    console.info(body, severe=True, showTime=False)
     filename:str = body['filename']
     path:str = body['path']
     
