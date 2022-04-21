@@ -21,9 +21,20 @@ def parse_to_dict(redis_data: list):
     except:
         raise Exception('Error from load Redis')
         
+        
 
 def exclude_number(cell_name: str) :
+    """remove number of cell name and returning colum cell name
+
+    Args:
+        cell_name (str): cell name, example: `A10`
+
+    Returns:
+        String: column value of cellname without number, example `A`
+    """
     return re.findall("[A-Z]+", cell_name)[0]
+
+
 
 def similarity_word(request):
     console.info('REQUEST: ', request)
