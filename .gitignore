@@ -1,0 +1,11 @@
+node_modules
+backend/__pycache__
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# test folder
+tests/
+tests_data/
+
+venv/

@@ -16,7 +16,7 @@ redis = redis.Redis(host=env.HOST, port=env.PORT)
 def insert_to_redis(filename,result_json):
     redis.rpush(filename, json.dumps(result_json))
 
-def similarity_word_preproses(colum,value,filename):
+def similarity_word_preproses(colum, value, filename):
     # import redis
     # redis = redis.Redis(host=env.HOST,port=env.PORT)
             
@@ -115,4 +115,4 @@ def similarity_word_preproses(colum,value,filename):
     parsed = json.loads(result)
     print(df)
     
-    insert_to_redis(filename,parsed)
+    insert_to_redis(filename, parsed)
