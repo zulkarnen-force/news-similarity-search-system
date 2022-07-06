@@ -40,7 +40,7 @@ def similarity_word(request):
     console.info('REQUEST: ', request)
     
     filename = request['filename']
-    column_name = request['column_name']
+    column_name = request['columnName']
     text = request['text']
     similarity_value = float(request['similarity'])
     cell = request['cell']

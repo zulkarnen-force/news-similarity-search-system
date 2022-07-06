@@ -3,6 +3,8 @@ backend/__pycache__
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+flask-socketio/__pycache__/
+*.py[cod]
 
 # test folder
 tests/
