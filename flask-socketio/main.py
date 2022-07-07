@@ -1,7 +1,5 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send, emit
-import json
-import numpy as np
 from similarity_preprosess import similarity_word_preproses
 from similarity import  similarity_word
 from py_console import console
@@ -37,17 +35,13 @@ def handle_request(request: dict):
     except BaseException as err:
         console.error('From: {}: \n {}'.format(__file__, err))
         emit('error', err.args)
-        return False;
-
-
+        return False;  
+    
+    
 @socketio.on('message')
 def handleMessage(msg):
-    send(f'FROM SERVER: {msg}', broadcast=True)
-    msg = msg.split(" ; ")
-    msg = np.array(msg)
-    
-    # similarity_word(str(msg[0]),str(msg[1]),str(msg[2]))
-    # similarity_word_preproses(str(msg[0]),str(msg[1]),str(msg[2]))
-    
+    # handle any message from client
+    send('hello from server');
+
 if __name__ == '__main__':
     socketio.run(app)

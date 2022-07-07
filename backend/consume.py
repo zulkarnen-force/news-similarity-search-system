@@ -1,12 +1,10 @@
 import json
-from click import secho
 import pandas as pd
+from pandas import DataFrame
 import env
 import redis 
 from redis.exceptions import DataError
 from py_console import console
-from amqpstorm import message as msg
-
 
 BASE_URL = 'http://localhost:8000/'
 # connect to redis
@@ -15,15 +13,13 @@ redis = redis.Redis(host=env.HOST, port=env.PORT, decode_responses=True)
     
 def insert_to_redis(filename, data):
     
-    if (redis.rpush(filename, data) != 0) :
-        console.success(f'file saved successfully on Redis with filename {filename}', severe=True, showTime=False)
+    file = redis.rpush(filename, data)
+    if (file == 0):
+        raise Exception('failed save to redis')
     else:
-        raise Exception('Failed save to redis')
-    
-        
-             
-        
-def load_file_from_db(source:str, filename:str) :
+        console.success('success to save to redis', severe=True)
+
+def load_file_from_db(source:str, filename:str) -> DataFrame :
     
     try :
          
@@ -44,27 +40,16 @@ def load_file_from_db(source:str, filename:str) :
 
 def on_message(message):
     
-    
     body:dict = json.loads(message.body)
-    
     console.info(body, severe=True, showTime=False)
     filename:str = body['filename']
     path:str = body['path']
     
     try :
         dataframe = load_file_from_db(BASE_URL+path, filename)
-    
         json_data = dataframe.to_json(orient='records')
-        object_data = json.loads(json_data)
-        
-        try :
-            
-            insert_to_redis(filename, json_data)  
-            message.ack()
-
-        except Exception as e:
-            console.warn(f'{e} ~consume.py', severe=True, showTime=False)
-            
+        insert_to_redis(filename, json_data);
+        message.ack()
         
     except Exception as e:
         console.error(f'{e} ~consume.py-2', severe=True, showTime=False)
